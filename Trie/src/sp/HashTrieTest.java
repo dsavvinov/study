@@ -46,6 +46,16 @@ public class HashTrieTest {
         Assert.assertEquals(4, t.size());
         t.add("Another word");
         Assert.assertEquals(5, t.size());
+
+        HashTrie another = new HashTrie();
+        another.add("abcd");
+        another.add("abcd");
+        another.add("abcd");
+        Assert.assertEquals(1, another.size());
+        another.remove("abcd");
+        another.remove("abcd");
+        another.remove("abcd");
+        Assert.assertEquals(0, another.size());
     }
 
     @org.junit.Test
