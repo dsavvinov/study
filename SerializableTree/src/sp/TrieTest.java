@@ -14,7 +14,7 @@ public class TrieTest {
 
     @Test
     public void testSimple() {
-        HashTrie trie = new HashTrie();
+        Trie trie = instance();
 
         assertTrue(trie.add("abc"));
         assertTrue(trie.contains("abc"));
@@ -24,7 +24,7 @@ public class TrieTest {
 
     @Test
     public void testSimpleSerialization() throws IOException {
-        HashTrie trie = new HashTrie();
+        Trie trie = instance();
 
         assertTrue(trie.add("abc"));
         assertTrue(trie.add("cde"));
@@ -34,7 +34,7 @@ public class TrieTest {
         ((StreamSerializable) trie).serialize(outputStream);
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        HashTrie newTrie = new HashTrie();
+        TrieImpl newTrie = new TrieImpl();
         ((StreamSerializable) newTrie).deserialize(inputStream);
 
         assertTrue(newTrie.contains("abc"));
@@ -45,7 +45,7 @@ public class TrieTest {
 
     @Test(expected=IOException.class)
     public void testSimpleSerializationFails() throws IOException {
-        HashTrie trie = new HashTrie();
+        Trie trie = instance();
 
         assertTrue(trie.add("abc"));
         assertTrue(trie.add("cde"));
