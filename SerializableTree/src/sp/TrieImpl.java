@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 
 public class TrieImpl implements Trie, StreamSerializable {
-    private final Node root;
+    private Node root;
 
     public TrieImpl() {
         root = new Node();
@@ -19,11 +19,11 @@ public class TrieImpl implements Trie, StreamSerializable {
         return recursiveRemove(element, 0, root);
     }
 
-    public boolean add (String element) {
+    public boolean add(String element) {
         return recursiveAdd(element, 0, root);
     }
 
-    public boolean contains (String element) {
+    public boolean contains(String element) {
         Node resultOfWalk = walkOverString(element);
         return resultOfWalk != null && resultOfWalk.isTerminal();
     }
@@ -32,12 +32,11 @@ public class TrieImpl implements Trie, StreamSerializable {
         return root.getSizeInSubtree();
     }
 
-    public int howManyStartsWithPrefix (String prefix) {
+    public int howManyStartsWithPrefix(String prefix) {
         Node resultOfWalk = walkOverString(prefix);
         if (resultOfWalk == null) {
             return 0;
-        }
-        else {
+        } else {
             return resultOfWalk.getSizeInSubtree();
         }
     }
@@ -45,26 +44,27 @@ public class TrieImpl implements Trie, StreamSerializable {
     public void serialize(OutputStream out) throws IOException {
         DataOutputStream dataOut = new DataOutputStream(out);
         dataOut.writeUTF("TRIE");
-        ArrayList <String> dictionary = getAllStrings();
-        dataOut.writeLong(dictionary.size());
+        ArrayList<String> dictionary = getAllStrings();
+        dataOut.writeInt(dictionary.size());
         for (String s : dictionary) {
             dataOut.writeUTF(s);
         }
     }
 
     public void deserialize(InputStream in) throws IOException {
-        DataInputStream     dataIn      = new DataInputStream(in);
-        ArrayList<String>   dictionary  = new ArrayList<>();
+        DataInputStream dataIn = new DataInputStream(in);
+        ArrayList<String> dictionary = new ArrayList<>();
 
         String header = dataIn.readUTF();
-        if (!header.equals("TRIE"))
+        if (!header.equals("TRIE")) {
             throw new StreamCorruptedException("Header not found");
+        }
 
         /* не должен ли я заворачивать все read'ы в try-catch, чтобы пробрасывать наверх
            более конкретное исключение (не IOException, а, например, StreamCorruptedException
            с комментарием "Can't read size of trie")?
         */
-        long trieSize = dataIn.readLong();
+        long trieSize = dataIn.readInt();
         for (int i = 0; i < trieSize; i++) {
             String curWord = dataIn.readUTF();
             // we can't write straight to 'this'-trie as that could lead to inconsistent state
@@ -72,22 +72,22 @@ public class TrieImpl implements Trie, StreamSerializable {
         }
 
         // iff we read all words successfully then change current state to new one
-        root.map.clear();
-        for(String word : dictionary) {
+        root = new Node();  // discard old state
+        for (String word : dictionary) {
             add(word);
         }
     }
 
     public ArrayList<String> getAllStrings() {
-        ArrayList<String> res   = new ArrayList<>();
+        ArrayList<String> res = new ArrayList<>();
         StringBuilder curString = new StringBuilder();
         collectAllStrings(root, res, curString);
         return res;
     }
 
-    private void collectAllStrings (Node              curNode,
-                                    ArrayList<String> res,
-                                    StringBuilder     curString) {
+    private void collectAllStrings(Node curNode,
+                                   ArrayList<String> res,
+                                   StringBuilder curString) {
         if (curNode.isTerminal()) {
             res.add(curString.toString());
         }
@@ -113,8 +113,7 @@ public class TrieImpl implements Trie, StreamSerializable {
         }
         if (index == element.length()) {
             return curNode;
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -127,12 +126,11 @@ public class TrieImpl implements Trie, StreamSerializable {
                 curNode.setTerminal(true);
             }
             return res;
-        }
-        else {
+        } else {
             Node nextNode = curNode.getOrAddNextNode(element.charAt(index));
-            int     oldSize = nextNode.getSizeInSubtree();
-            boolean res     = recursiveAdd(element, index + 1, nextNode);
-            int     newSize = nextNode.getSizeInSubtree();
+            int oldSize = nextNode.getSizeInSubtree();
+            boolean res = recursiveAdd(element, index + 1, nextNode);
+            int newSize = nextNode.getSizeInSubtree();
 
             // add growth of size in next node to current node
             curNode.setSizeInSubtree(curNode.getSizeInSubtree() + newSize - oldSize);
@@ -146,17 +144,17 @@ public class TrieImpl implements Trie, StreamSerializable {
             curNode.setTerminal(false);
             curNode.setSizeInSubtree(curNode.getSizeInSubtree() - 1);
             return res;
-        }
-        else {
+        } else {
             char symbol = element.charAt(index);
             Node nextNode = curNode.getNextNode(symbol);
 
-            if (nextNode == null)
+            if (nextNode == null) {
                 return false;
+            }
 
-            int     oldSize = nextNode.getSizeInSubtree();
-            boolean res     = recursiveRemove(element, index + 1, nextNode);
-            int     newSize = nextNode.getSizeInSubtree();
+            int oldSize = nextNode.getSizeInSubtree();
+            boolean res = recursiveRemove(element, index + 1, nextNode);
+            int newSize = nextNode.getSizeInSubtree();
 
             // add growth of size in next node to current node
             curNode.setSizeInSubtree(curNode.getSizeInSubtree() + newSize - oldSize);
@@ -174,7 +172,7 @@ public class TrieImpl implements Trie, StreamSerializable {
         private final HashMap<Character, Node> map;
         private boolean isTerminal;
 
-        public Node () {
+        public Node() {
             map = new HashMap<>();
             isTerminal = false;
             sizeInSubtree = 0;
@@ -183,14 +181,14 @@ public class TrieImpl implements Trie, StreamSerializable {
         /**
          * returns next node if it exists, or null otherwise
          */
-        public Node getNextNode (char symbol) {
+        public Node getNextNode(char symbol) {
             return map.getOrDefault(symbol, null);
         }
 
         /**
          * returns next node and create it if necessary
          */
-        public Node getOrAddNextNode (char symbol) {
+        public Node getOrAddNextNode(char symbol) {
             Node nextNode = getNextNode(symbol);
             if (nextNode == null) {
                 nextNode = new Node();
@@ -199,9 +197,10 @@ public class TrieImpl implements Trie, StreamSerializable {
             return nextNode;
         }
 
-        public void removeNextNode (char symbol) {
+        public void removeNextNode(char symbol) {
             map.remove(symbol);
         }
+
         public boolean isTerminal() {
             return isTerminal;
         }

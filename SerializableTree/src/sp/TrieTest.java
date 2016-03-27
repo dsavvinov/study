@@ -42,6 +42,19 @@ public class TrieTest {
         assertEquals(2, trie.size());
     }
 
+    @Test
+    public void testStateRecoveryAfterSerialization() throws IOException {
+        Trie trie = instance();
+
+        trie.add("a");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ((StreamSerializable) trie).serialize(outputStream);
+
+        ((StreamSerializable) trie).deserialize(new ByteArrayInputStream(outputStream.toByteArray()));
+
+        assertEquals(1, trie.size());
+    }
 
     @Test(expected=IOException.class)
     public void testSimpleSerializationFails() throws IOException {
