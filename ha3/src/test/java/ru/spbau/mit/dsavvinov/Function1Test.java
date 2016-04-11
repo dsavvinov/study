@@ -1,3 +1,5 @@
+package ru.spbau.mit.dsavvinov;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,8 +23,8 @@ public class Function1Test {
         Function1<String, Integer> u = arg -> arg.length();
         Function1<Number, String> r = arg -> arg.toString();
         Function1 <String, String> comp = u.compose(r);
-        Assert.assertEquals("4", comp.apply("test"));
-        Assert.assertEquals("13", comp.apply("long sentence"));
-        Assert.assertEquals("0", comp.apply(""));
+        assertEquals("4", comp.apply("test"));
+        assertEquals("13", comp.apply("long sentence"));
+        assertEquals("0", comp.apply(""));
     }
 }

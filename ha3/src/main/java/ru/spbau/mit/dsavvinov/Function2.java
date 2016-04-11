@@ -1,3 +1,5 @@
+package ru.spbau.mit.dsavvinov;
+
 /**
  * Created by dsavv on 15.03.2016.
  */

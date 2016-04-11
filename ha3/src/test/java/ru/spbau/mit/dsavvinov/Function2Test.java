@@ -1,4 +1,5 @@
-import org.junit.Assert;
+package ru.spbau.mit.dsavvinov;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -14,27 +15,27 @@ public class Function2Test {
         Function2<String, Integer, Integer > f = (c, times) -> c.length() * times;
         Function1<Number,    String> g = arg -> arg.toString();
         Function2<String, Integer, String> composition = f.compose(g);
-        Assert.assertEquals("16", composition.apply("haha", 4));
+        assertEquals("16", composition.apply("haha", 4));
     }
 
     @Test
     public void testBind1() throws Exception {
         Function2<Number, Number, String> f = (arg1, arg2) -> arg1.toString() + " + " + arg2.toString();
-        Assert.assertEquals("42 + 17", f.bind1(42).apply(17));
-        Assert.assertEquals("42 + 36", f.bind1(42).apply(36));
+        assertEquals("42 + 17", f.bind1(42).apply(17));
+        assertEquals("42 + 36", f.bind1(42).apply(36));
     }
 
     @Test
     public void testBind2() throws Exception {
         Function2<Number, Number, String> f = (arg1, arg2) -> arg1.toString() + " + " + arg2.toString();
-        Assert.assertEquals("17 + 42", f.bind2(42).apply(17));
-        Assert.assertEquals("36 + 42", f.bind2(42).apply(36));
+        assertEquals("17 + 42", f.bind2(42).apply(17));
+        assertEquals("36 + 42", f.bind2(42).apply(36));
     }
 
     @Test
     public void testCurry() throws Exception {
         Function2<Number, Number, String> f = (arg1, arg2) -> arg1.toString() + " + " + arg2.toString();
         Function1<Number, Function1 <Number, String> > curried = f.curry();
-        Assert.assertEquals(f.bind1(42).apply(17), curried.apply(42).apply(17));
+        assertEquals(f.bind1(42).apply(17), curried.apply(42).apply(17));
     }
 }
