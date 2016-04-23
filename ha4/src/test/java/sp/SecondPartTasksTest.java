@@ -11,6 +11,7 @@ import java.util.stream.DoubleStream;
 /**
  * Created by dsavv on 10.04.2016.
  */
+
 public class SecondPartTasksTest {
 
     @Test
@@ -53,7 +54,7 @@ public class SecondPartTasksTest {
 
         assertEquals("Author3", findPrinter(authors));
 
-        assertEquals("", findPrinter(Collections.emptyMap()));
+        assertEquals(null, findPrinter(Collections.emptyMap()));
     }
 
     @Test

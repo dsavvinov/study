@@ -32,7 +32,7 @@ public final class SecondPartTasks {
                     }
                     return null;
                 })
-                .filter((String str) -> str.contains(sequence))
+                .filter(str -> str.contains(sequence))
                 .collect(Collectors.toList());
     }
 
@@ -54,13 +54,15 @@ public final class SecondPartTasks {
     // Надо вычислить, чья общая длина произведений наибольшая.
     public static String findPrinter(Map<String, List<String>> compositions) {
         return compositions.entrySet().stream()
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().stream()
-                        .mapToInt(String::length)
-                        .sum())
+                .max(
+                        Comparator.comparingInt(
+                                (Map.Entry<String, List<String>> entry) -> entry.getValue().stream()
+                                        .mapToInt(String::length)
+                                        .sum()
+                        )
                 )
-                .max((o1, o2) -> o1.getValue().compareTo(o2.getValue()))
-                .map(AbstractMap.SimpleEntry::getKey)
-                .orElse("");
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
