@@ -20,7 +20,14 @@ public class ThreadPoolImpl {
 
     public <R> LightFuture<R> submit(Supplier<R> todo) {
         LightFutureImpl<R> future = new LightFutureImpl<>(this);
-        Task<R> t = new Task<>(todo, future);
+        Task<R> t = new Task<>(todo, future, null);
+        addTask(t);
+        return future;
+    }
+
+    private <R, D> LightFuture<R> submitDependent(Supplier<R> dependentTodo, LightFutureImpl<D> dependency) {
+        LightFutureImpl<R> future = new LightFutureImpl<>(this);
+        Task<R> t = new Task<>(dependentTodo, future, dependency);
         addTask(t);
         return future;
     }
@@ -36,6 +43,21 @@ public class ThreadPoolImpl {
         }
     }
 
+    private Task getTask() {
+        Task s;
+        synchronized (tasksQueue) {
+            while (tasksQueue.isEmpty()) {
+                try {
+                    tasksQueue.wait();
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            s = tasksQueue.remove();
+        }
+        return s;
+    }
     private final List<Thread> threads;
     private final Queue<Task> tasksQueue;
 
@@ -43,21 +65,15 @@ public class ThreadPoolImpl {
         @Override
         public void run() {
             while (true) {
-                Task s;
-                synchronized (tasksQueue) {
-                    while (tasksQueue.isEmpty()) {
-                        try {
-                            tasksQueue.wait();
-                        }
-                        catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    s = tasksQueue.remove();
-                }
+                Task s = getTask();
                 try {
-                    Object res = s.todo.get();
-                    s.boundedFuture.updateResult(res);
+                    if (s.dependency == null || s.dependency.isReady()) {
+                        Object res = s.todo.get();
+                        s.boundedFuture.updateResult(res);
+                    }
+                    else {
+                        addTask(s);
+                    }
                 }
                 catch (Throwable e) {
                     s.boundedFuture.markAsFailed(e);
@@ -66,13 +82,16 @@ public class ThreadPoolImpl {
         }
     }
 
+
     private class Task<R> {
         Supplier<R> todo;
         LightFutureImpl<R> boundedFuture;
+        LightFutureImpl dependency;
 
-        Task(Supplier s, LightFutureImpl f) {
+        Task(Supplier s, LightFutureImpl f, LightFutureImpl dep) {
             todo = s;
             boundedFuture = f;
+            dependency = dep;
         }
     }
 
