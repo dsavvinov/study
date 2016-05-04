@@ -36,7 +36,7 @@ public class LightFutureImpl<R> implements LightFuture<R> {
         throw new LightExecutionException("Evaluation interrupted exception", causeOfFail);
     }
 
-    public void updateResult (R r) {
+    public void updateResult(R r) {
         result = r;
         ready = true;
         synchronized (gotResultEvent) {
@@ -44,7 +44,7 @@ public class LightFutureImpl<R> implements LightFuture<R> {
         }
     }
 
-    public void markAsFailed (Throwable supplierException) {
+    public void markAsFailed(Throwable supplierException) {
         isFailed = true;
         ready = true;
         synchronized (gotResultEvent) {
@@ -54,15 +54,16 @@ public class LightFutureImpl<R> implements LightFuture<R> {
 
     @Override
     public <T> LightFuture<T> thenApply(Function<R, T> f) throws LightExecutionException {
-        return boundedThreadPool.submit((Supplier<T>) () -> {
-            try {
-                R r = this.get();
-                return f.apply(r);
-            }
-            catch (LightExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return boundedThreadPool.submitDependent( () -> {
+                    try {
+                        R r = this.get();
+                        return f.apply(r);
+                    } catch (LightExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                this
+        );
     }
 
     private final Object gotResultEvent = new Object();

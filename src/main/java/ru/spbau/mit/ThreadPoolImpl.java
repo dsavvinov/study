@@ -25,7 +25,7 @@ public class ThreadPoolImpl {
         return future;
     }
 
-    private <R, D> LightFuture<R> submitDependent(Supplier<R> dependentTodo, LightFutureImpl<D> dependency) {
+    public <R, D> LightFuture<R> submitDependent(Supplier<R> dependentTodo, LightFutureImpl<D> dependency) {
         LightFutureImpl<R> future = new LightFutureImpl<>(this);
         Task<R> t = new Task<>(dependentTodo, future, dependency);
         addTask(t);
