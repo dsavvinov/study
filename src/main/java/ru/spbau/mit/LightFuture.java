@@ -9,5 +9,5 @@ import java.util.function.Supplier;
 public interface LightFuture<R> {
     boolean isReady();
     R get() throws LightExecutionException;
-    <T> LightFuture<T> thenApply(Function<R, T> f) throws LightExecutionException;
+    <T> LightFuture<T> thenApply(Function<R, T> f);
 }

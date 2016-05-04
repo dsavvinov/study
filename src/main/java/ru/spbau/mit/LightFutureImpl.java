@@ -44,6 +44,7 @@ public class LightFutureImpl<R> implements LightFuture<R> {
         }
     }
 
+
     public void markAsFailed(Throwable supplierException) {
         isFailed = true;
         ready = true;
@@ -53,21 +54,34 @@ public class LightFutureImpl<R> implements LightFuture<R> {
     }
 
     @Override
-    public <T> LightFuture<T> thenApply(Function<R, T> f) throws LightExecutionException {
+    public <T> LightFuture<T> thenApply(Function<R, T> f) {
         return boundedThreadPool.submitDependent( () -> {
                     try {
                         R r = this.get();
                         return f.apply(r);
-                    } catch (LightExecutionException e) {
-                        throw new RuntimeException(e);
+                    } catch (Throwable ignored) {
+                        /* we ignore this exception because all exceptions-handling logic done by workers
+                         * (including correct storing of exceptions and propogating them into dependent futures)
+                         */
+                        return null;
                     }
                 },
                 this
         );
     }
 
-    private final Object gotResultEvent = new Object();
+    public boolean isFailed() {
+        return isFailed;
+    }
+    public Exception getCauseOfFail() {
+        return causeOfFail;
+    }
+
     private boolean isFailed = false;
+    private final Object gotResultEvent = new Object();
+
+
+
     private Exception causeOfFail = null;
     private boolean ready = false;
     private R result;

@@ -1,6 +1,7 @@
 package ru.spbau.mit;
 
 import org.junit.Test;
+import sun.nio.ch.ThreadPool;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -125,5 +126,17 @@ public class ThreadPoolImplTest {
         four.get();
 
         assertEquals("1324", result.toString());
+    }
+
+    @Test(expected = LightExecutionException.class)
+    public void testAndThenThrow() throws LightExecutionException{
+        ThreadPoolImpl tp = new ThreadPoolImpl(2);
+
+        LightFuture<Integer> one = tp.submit(() -> {
+            throw new IndexOutOfBoundsException();
+        });
+
+        LightFuture<String> two = one.thenApply(Object::toString);
+        two.get();
     }
 }

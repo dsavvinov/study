@@ -67,13 +67,19 @@ public class ThreadPoolImpl {
             while (true) {
                 Task s = getTask();
                 try {
-                    if (s.dependency == null || s.dependency.isReady()) {
+                    // if task doesn't have dependency, or this dependency finished successfully, then run supplier
+                    if (s.dependency == null || (s.dependency.isReady() && !s.dependency.isFailed()) ) {
                         Object res = s.todo.get();
                         s.boundedFuture.updateResult(res);
+                        continue;
                     }
-                    else {
-                        addTask(s);
+                    // if dependency finished, but crashed, crash 'this'-task and mark it as failed with same result
+                    if (s.dependency.isReady() && s.dependency.isFailed()) {
+                        s.boundedFuture.markAsFailed(s.dependency.getCauseOfFail());
+                        continue;
                     }
+                    // if dependency is not finished yet, then add task to end of queue
+                    addTask(s);
                 }
                 catch (Throwable e) {
                     s.boundedFuture.markAsFailed(e);
