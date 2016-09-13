@@ -15,8 +15,9 @@ public class LazyLockfreeImpl<T> implements Lazy<T> {
 
     @Override
     public T get() {
+        Supplier<T> tmpSupplier = supplier;
         while (supplier != null) {
-            if (valueUpdater.compareAndSet(this, null, supplier.get())) {
+            if (valueUpdater.compareAndSet(this, null, tmpSupplier.get())) {
                 supplier = null;
             }
         }
